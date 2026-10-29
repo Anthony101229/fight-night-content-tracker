@@ -32,8 +32,9 @@ class Base(DeclarativeBase):
 
 
 class CardPosition(StrEnum):
-    MAIN = "main"
-    CO_MAIN = "co_main"
+    MAIN = "main"  # main event
+    CO_MAIN = "co_main"  # co-main event
+    MAIN_CARD = "main_card"  # other main-card fights
     PRELIM = "prelim"
 
 
@@ -69,8 +70,11 @@ class Event(Base):
     # Unique: the scraper uses this to recognise an event it has already saved.
     source_url: Mapped[str] = mapped_column(String(500), unique=True)
 
+    # Postgres sorts enums in declaration order, so this lists main event first, prelims last.
     bouts: Mapped[list["Bout"]] = relationship(
-        back_populates="event", cascade="all, delete-orphan"
+        back_populates="event",
+        cascade="all, delete-orphan",
+        order_by=lambda: (Bout.card_position, Bout.id),
     )
     crew_assignments: Mapped[list["CrewAssignment"]] = relationship(
         back_populates="event", cascade="all, delete-orphan"
