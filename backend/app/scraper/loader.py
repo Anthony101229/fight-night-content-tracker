@@ -34,12 +34,18 @@ def save_event(
 
     for parsed_bout in parsed.bouts:
         left = _save_fighter(
-            session, parsed_bout.left, fighter_details.get(parsed_bout.left.url),
-            parsed_bout.weight_class, stats,
+            session,
+            parsed_bout.left,
+            fighter_details.get(parsed_bout.left.url),
+            parsed_bout.weight_class,
+            stats,
         )
         right = _save_fighter(
-            session, parsed_bout.right, fighter_details.get(parsed_bout.right.url),
-            parsed_bout.weight_class, stats,
+            session,
+            parsed_bout.right,
+            fighter_details.get(parsed_bout.right.url),
+            parsed_bout.weight_class,
+            stats,
         )
         _save_bout(session, event, left, right, parsed_bout, stats)
     return event

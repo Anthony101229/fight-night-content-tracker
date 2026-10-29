@@ -56,7 +56,12 @@ def test_get_event_returns_card_in_running_order(client: TestClient, db: Session
     # Created out of order on purpose: the API should sort main event first, prelims last.
     event = make_event(
         db,
-        positions=(CardPosition.PRELIM, CardPosition.MAIN, CardPosition.MAIN_CARD, CardPosition.CO_MAIN),
+        positions=(
+            CardPosition.PRELIM,
+            CardPosition.MAIN,
+            CardPosition.MAIN_CARD,
+            CardPosition.CO_MAIN,
+        ),
     )
 
     response = client.get(f"/events/{event.id}")

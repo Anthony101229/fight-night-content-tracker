@@ -24,6 +24,8 @@ class FighterLink:
 
 @dataclass
 class ParsedBout:
+    """One row of a fight card."""
+
     weight_class: str | None
     left: FighterLink  # on finished fights Wikipedia lists the winner on the left
     right: FighterLink
@@ -35,6 +37,8 @@ class ParsedBout:
 
 @dataclass
 class ParsedEvent:
+    """Everything read from one event page."""
+
     name: str
     date: dt.date
     location: str | None
@@ -148,11 +152,16 @@ def _parse_fight_card(soup: BeautifulSoup) -> list[ParsedBout]:
             if len(tds) < 6:
                 continue  # column header row
 
+            # The first two main-card fights are the main and co-main events.
             if in_prelims:
                 position = CardPosition.PRELIM
+            elif main_card_count == 0:
+                position = CardPosition.MAIN
+            elif main_card_count == 1:
+                position = CardPosition.CO_MAIN
             else:
-                position = [CardPosition.MAIN, CardPosition.CO_MAIN][main_card_count] \
-                    if main_card_count < 2 else CardPosition.MAIN_CARD
+                position = CardPosition.MAIN_CARD
+            if not in_prelims:
                 main_card_count += 1
 
             bouts.append(_parse_bout_row(tds, position))
@@ -185,7 +194,7 @@ def _parse_bout_row(tds: list[Tag], position: CardPosition) -> ParsedBout:
 
 
 def _clean_method(text: str) -> str | None:
-    """"Decision (unanimous) (29–28, 29–28, 30–27)" -> "Decision (unanimous)"."""
+    """ "Decision (unanimous) (29–28, 29–28, 30–27)" -> "Decision (unanimous)"."""
     text = clean_text(text)
     text = re.sub(r"\s*\([^)]*\d[^)]*\)", "", text)  # drop brackets containing scores
     return text[:100] or None
@@ -200,9 +209,7 @@ def _fighter_link(cell: Tag) -> FighterLink:
     # No article: build the URL the article would have, so the fighter still has a stable key.
     name = link.get_text() if link else cell.get_text()
     name = re.sub(r"\((c|ic)\)", "", clean_text(name)).strip()  # drop champion markers
-    return FighterLink(
-        name=name, url=f"{WIKI_BASE}/wiki/{name.replace(' ', '_')}", has_page=False
-    )
+    return FighterLink(name=name, url=f"{WIKI_BASE}/wiki/{name.replace(' ', '_')}", has_page=False)
 
 
 def _absolute_url(href: str) -> str:

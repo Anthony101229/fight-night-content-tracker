@@ -32,6 +32,8 @@ class Base(DeclarativeBase):
 
 
 class CardPosition(StrEnum):
+    """Where a bout sits on the card, in running order."""
+
     MAIN = "main"  # main event
     CO_MAIN = "co_main"  # co-main event
     MAIN_CARD = "main_card"  # other main-card fights
@@ -39,12 +41,16 @@ class CardPosition(StrEnum):
 
 
 class CrewRole(StrEnum):
+    """A crew member's job."""
+
     CAMERA = "camera"
     PRODUCER = "producer"
     EDITOR = "editor"
 
 
 class FootageStatus(StrEnum):
+    """Stages a bout's footage moves through, in order."""
+
     PLANNED = "planned"
     SHOT = "shot"
     EDITED = "edited"
@@ -52,7 +58,7 @@ class FootageStatus(StrEnum):
 
 
 def pg_enum(enum_cls: type[StrEnum], name: str) -> Enum:
-    """Postgres enum type that stores the lowercase values ("planned"), not the names ("PLANNED")."""
+    """Postgres enum type that stores values ("planned"), not member names ("PLANNED")."""
     return Enum(enum_cls, name=name, values_callable=lambda e: [m.value for m in e])
 
 
@@ -61,6 +67,8 @@ crew_role_enum = pg_enum(CrewRole, "crew_role")
 
 
 class Event(Base):
+    """One MMA event (e.g. UFC 333). Owns its bouts and crew assignments."""
+
     __tablename__ = "events"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -82,6 +90,8 @@ class Event(Base):
 
 
 class Fighter(Base):
+    """A fighter. Shared across events, so deleting an event keeps them."""
+
     __tablename__ = "fighters"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -94,6 +104,8 @@ class Fighter(Base):
 
 
 class Bout(Base):
+    """One fight on an event's card, between a red-corner and a blue-corner fighter."""
+
     __tablename__ = "bouts"
     __table_args__ = (
         # The same two fighters can't appear twice on one event's card.
@@ -101,15 +113,11 @@ class Bout(Base):
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    event_id: Mapped[int] = mapped_column(
-        ForeignKey("events.id", ondelete="CASCADE"), index=True
-    )
+    event_id: Mapped[int] = mapped_column(ForeignKey("events.id", ondelete="CASCADE"), index=True)
     red_fighter_id: Mapped[int] = mapped_column(ForeignKey("fighters.id"))
     blue_fighter_id: Mapped[int] = mapped_column(ForeignKey("fighters.id"))
     weight_class: Mapped[str | None] = mapped_column(String(50))
-    card_position: Mapped[CardPosition] = mapped_column(
-        pg_enum(CardPosition, "card_position")
-    )
+    card_position: Mapped[CardPosition] = mapped_column(pg_enum(CardPosition, "card_position"))
     # Result fields stay empty until the fight happens.
     result: Mapped[str | None] = mapped_column(String(50))
     method: Mapped[str | None] = mapped_column(String(100))
@@ -125,6 +133,8 @@ class Bout(Base):
 
 
 class CrewMember(Base):
+    """A person on the media team."""
+
     __tablename__ = "crew_members"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -137,16 +147,14 @@ class CrewMember(Base):
 
 
 class CrewAssignment(Base):
+    """A crew member working a specific event, in a specific role."""
+
     __tablename__ = "crew_assignments"
     __table_args__ = (UniqueConstraint("event_id", "crew_member_id"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    event_id: Mapped[int] = mapped_column(
-        ForeignKey("events.id", ondelete="CASCADE"), index=True
-    )
-    crew_member_id: Mapped[int] = mapped_column(
-        ForeignKey("crew_members.id", ondelete="CASCADE")
-    )
+    event_id: Mapped[int] = mapped_column(ForeignKey("events.id", ondelete="CASCADE"), index=True)
+    crew_member_id: Mapped[int] = mapped_column(ForeignKey("crew_members.id", ondelete="CASCADE"))
     role: Mapped[CrewRole] = mapped_column(crew_role_enum)  # their role at this event
 
     event: Mapped[Event] = relationship(back_populates="crew_assignments")
@@ -154,13 +162,13 @@ class CrewAssignment(Base):
 
 
 class FootageAsset(Base):
+    """The footage record for one bout (exactly one per bout)."""
+
     __tablename__ = "footage_assets"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     # unique=True makes this one-to-one: each bout has exactly one footage record.
-    bout_id: Mapped[int] = mapped_column(
-        ForeignKey("bouts.id", ondelete="CASCADE"), unique=True
-    )
+    bout_id: Mapped[int] = mapped_column(ForeignKey("bouts.id", ondelete="CASCADE"), unique=True)
     status: Mapped[FootageStatus] = mapped_column(
         pg_enum(FootageStatus, "footage_status"),
         default=FootageStatus.PLANNED,

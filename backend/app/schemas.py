@@ -18,6 +18,8 @@ class ORMModel(BaseModel):
 
 
 class FighterOut(ORMModel):
+    """A fighter as returned by the API."""
+
     id: int
     name: str
     nickname: str | None
@@ -26,6 +28,8 @@ class FighterOut(ORMModel):
 
 
 class FootageOut(ORMModel):
+    """A bout's footage status and notes."""
+
     bout_id: int
     status: FootageStatus
     notes: str | None
@@ -33,6 +37,8 @@ class FootageOut(ORMModel):
 
 
 class BoutOut(ORMModel):
+    """One bout with both fighters, the result, and footage status."""
+
     id: int
     weight_class: str | None
     card_position: CardPosition
@@ -45,18 +51,24 @@ class BoutOut(ORMModel):
 
 
 class CrewMemberOut(ORMModel):
+    """A crew member as returned by the API."""
+
     id: int
     name: str
     role: CrewRole
 
 
 class CrewAssignmentOut(ORMModel):
+    """A crew member assigned to an event."""
+
     id: int
     role: CrewRole
     crew_member: CrewMemberOut
 
 
 class EventOut(ORMModel):
+    """An event without its card (used in lists)."""
+
     id: int
     name: str
     date: dt.date
@@ -65,11 +77,15 @@ class EventOut(ORMModel):
 
 
 class EventDetail(EventOut):
+    """An event with its full fight card and crew assignments."""
+
     bouts: list[BoutOut]
     crew_assignments: list[CrewAssignmentOut]
 
 
 class CrewAssignmentCreate(BaseModel):
+    """Request body for assigning a crew member to an event."""
+
     crew_member_id: int
     role: CrewRole | None = None  # defaults to the crew member's usual role
 
@@ -83,13 +99,18 @@ class FootageUpdate(BaseModel):
     @field_validator("status")
     @classmethod
     def status_not_null(cls, value: FootageStatus | None) -> FootageStatus:
-        # Runs only when "status" is actually sent; null would break the NOT NULL column.
+        """Reject an explicit null status (the database column is NOT NULL).
+
+        Runs only when "status" is actually sent, so leaving it out is still allowed.
+        """
         if value is None:
             raise ValueError("status cannot be null")
         return value
 
 
 class FootageSummary(BaseModel):
+    """Bout counts per footage status for one event."""
+
     event_id: int
     event_name: str
     event_date: dt.date

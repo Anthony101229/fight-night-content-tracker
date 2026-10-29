@@ -44,7 +44,11 @@ def footage_summary(
     # Outer joins keep events that have no bouts yet (their counts are 0).
     query = (
         select(
-            Event.id, Event.name, Event.date, func.count(FootageAsset.id).label("total"), *status_counts
+            Event.id,
+            Event.name,
+            Event.date,
+            func.count(FootageAsset.id).label("total"),
+            *status_counts,
         )
         .outerjoin(Bout, Bout.event_id == Event.id)
         .outerjoin(FootageAsset, FootageAsset.bout_id == Bout.id)

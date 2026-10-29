@@ -5,3 +5,20 @@ pythonpath = ["."]
 
 [tool.coverage.run]
 source = ["app"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+# pycodestyle errors, pyflakes, import sorting, pyupgrade, bugbear
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# HTML test samples copy Wikipedia's markup line-for-line; Alembic writes long generated lines.
+"tests/test_parsers.py" = ["E501"]
+"alembic/versions/*" = ["E501"]
+
+[tool.ruff.lint.isort]
+# The local alembic/ folder holds migrations; the "alembic" import is the installed package.
+known-third-party = ["alembic"]

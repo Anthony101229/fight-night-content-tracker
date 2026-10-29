@@ -102,7 +102,11 @@ def test_event_page_card_positions() -> None:
 def test_event_page_results() -> None:
     main, co_main, draw, upcoming = parse_event_page(EVENT_HTML).bouts
 
-    assert (main.outcome, main.method, main.round) == ("left_won", "Submission (rear-naked choke)", 2)
+    assert (main.outcome, main.method, main.round) == (
+        "left_won",
+        "Submission (rear-naked choke)",
+        2,
+    )
     assert co_main.method == "Decision (unanimous)"  # judges' scores removed
     assert (draw.outcome, draw.method) == ("draw", "Draw (majority)")
     assert (upcoming.outcome, upcoming.method, upcoming.round) == (None, None, None)

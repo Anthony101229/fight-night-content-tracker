@@ -85,6 +85,7 @@ def _fetch_fighter(fetcher: Fetcher, url: str, stats: Counter) -> ParsedFighter 
 
 
 def main() -> None:
+    """Parse command-line options, run the scraper, and print a summary with timings."""
     parser = argparse.ArgumentParser(description="Scrape UFC events from Wikipedia.")
     parser.add_argument(
         "--recent", type=int, default=10, help="how many past events to include (default 10)"

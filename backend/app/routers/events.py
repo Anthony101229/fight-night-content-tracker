@@ -91,7 +91,9 @@ def assign_crew(event_id: int, body: CrewAssignmentCreate, db: DbSession) -> Cre
     if _find_assignment(db, event_id, member.id) is not None:
         raise HTTPException(status.HTTP_409_CONFLICT, "Crew member already assigned")
 
-    assignment = CrewAssignment(event_id=event_id, crew_member=member, role=body.role or member.role)
+    assignment = CrewAssignment(
+        event_id=event_id, crew_member=member, role=body.role or member.role
+    )
     db.add(assignment)
     db.commit()
     return assignment

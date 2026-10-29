@@ -53,9 +53,7 @@ def test_update_footage_for_missing_bout_returns_404(client: TestClient) -> None
 
 
 def test_footage_summary_counts_each_status(client: TestClient, db: Session) -> None:
-    event = make_event(
-        db, positions=(CardPosition.MAIN, CardPosition.CO_MAIN, CardPosition.PRELIM)
-    )
+    event = make_event(db, positions=(CardPosition.MAIN, CardPosition.CO_MAIN, CardPosition.PRELIM))
     main, co_main, _prelim = event.bouts
     client.patch(f"/bouts/{main.id}/footage", json={"status": "delivered"})
     client.patch(f"/bouts/{co_main.id}/footage", json={"status": "edited"})
