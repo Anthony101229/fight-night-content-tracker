@@ -34,7 +34,19 @@ services:
       - ./backend:/app
     command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
-  # The "web" (React) service is added in Phase 4.
+  web:
+    build: ./frontend
+    environment:
+      # Vite forwards /api/* to this address (the api service on the compose network).
+      API_PROXY_TARGET: http://api:8000
+    depends_on:
+      - api
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      # Keep the container's own node_modules instead of the (macOS-built) host copy.
+      - /app/node_modules
 
 volumes:
   pgdata:
